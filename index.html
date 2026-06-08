@@ -3,121 +3,154 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Recipe Finder</title>
+<title>Recipe Finder App</title>
 
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, sans-serif;
-}
+    *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+        font-family:Arial, sans-serif;
+    }
 
-body{
-    background:#f5f5f5;
-}
+    body{
+        background:#f4f4f4;
+        padding:20px;
+    }
 
-header{
-    background:#ff6b6b;
-    color:white;
-    text-align:center;
-    padding:20px;
-}
+    h1{
+        text-align:center;
+        color:#333;
+        margin-bottom:20px;
+    }
 
-.search-box{
-    text-align:center;
-    margin:20px;
-}
+    .search-box{
+        display:flex;
+        justify-content:center;
+        gap:10px;
+        margin-bottom:20px;
+    }
 
-.search-box input{
-    width:300px;
-    padding:10px;
-    border:1px solid #ccc;
-    border-radius:5px;
-}
+    input{
+        width:300px;
+        padding:10px;
+        border:1px solid #ccc;
+        border-radius:5px;
+    }
 
-.search-box button{
-    padding:10px 20px;
-    border:none;
-    background:#ff6b6b;
-    color:white;
-    border-radius:5px;
-    cursor:pointer;
-}
+    button{
+        padding:10px 20px;
+        border:none;
+        background:#ff6b6b;
+        color:white;
+        border-radius:5px;
+        cursor:pointer;
+    }
 
-.recipe-container{
-    display:flex;
-    flex-wrap:wrap;
-    justify-content:center;
-    gap:20px;
-    padding:20px;
-}
+    button:hover{
+        background:#ff5252;
+    }
 
-.card{
-    width:250px;
-    background:white;
-    border-radius:10px;
-    overflow:hidden;
-    box-shadow:0 2px 8px rgba(0,0,0,0.2);
-}
+    .recipes{
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+        gap:20px;
+    }
 
-.card img{
-    width:100%;
-    height:180px;
-    object-fit:cover;
-}
+    .card{
+        background:white;
+        border-radius:10px;
+        overflow:hidden;
+        box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    }
 
-.card-content{
-    padding:15px;
-}
+    .card img{
+        width:100%;
+        height:200px;
+        object-fit:cover;
+    }
 
-.card-content h3{
-    margin-bottom:10px;
-}
+    .card h3{
+        padding:10px;
+        text-align:center;
+    }
 
-.card-content p{
-    color:#666;
-}
+    .card a{
+        display:block;
+        text-align:center;
+        padding:10px;
+        background:#28a745;
+        color:white;
+        text-decoration:none;
+    }
+
+    .card a:hover{
+        background:#218838;
+    }
+
+    .message{
+        text-align:center;
+        color:red;
+        margin-top:20px;
+    }
 </style>
 </head>
 <body>
 
-<header>
-    <h1>🍲 Recipe Finder App</h1>
-</header>
+<h1>🍲 Recipe Finder App</h1>
 
 <div class="search-box">
-    <input type="text" placeholder="Search recipes...">
-    <button>Search</button>
+    <input type="text" id="searchInput" placeholder="Enter recipe name">
+    <button onclick="searchRecipe()">Search</button>
 </div>
 
-<div class="recipe-container">
+<div id="recipes" class="recipes"></div>
+<p id="message" class="message"></p>
 
-    <div class="card">
-        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c" alt="Salad">
-        <div class="card-content">
-            <h3>Healthy Salad</h3>
-            <p>Fresh vegetables with healthy dressing.</p>
-        </div>
-    </div>
+<script>
+async function searchRecipe() {
+    const query = document.getElementById("searchInput").value.trim();
+    const recipesContainer = document.getElementById("recipes");
+    const message = document.getElementById("message");
 
-    <div class="card">
-        <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591" alt="Pizza">
-        <div class="card-content">
-            <h3>Cheese Pizza</h3>
-            <p>Delicious cheesy pizza with toppings.</p>
-        </div>
-    </div>
+    recipesContainer.innerHTML = "";
+    message.textContent = "";
 
-    <div class="card">
-        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38" alt="Burger">
-        <div class="card-content">
-            <h3>Classic Burger</h3>
-            <p>Juicy burger with crispy fries.</p>
-        </div>
-    </div>
+    if(query === ""){
+        message.textContent = "Please enter a recipe name!";
+        return;
+    }
 
-</div>
+    try {
+        const response = await fetch(
+            `https://www.themealdb.com/api/json/v1/1/search.php?s=${query}`
+        );
+
+        const data = await response.json();
+
+        if(data.meals){
+            data.meals.forEach(meal => {
+                recipesContainer.innerHTML += `
+                    <div class="card">
+                        <img src="${meal.strMealThumb}" alt="${meal.strMeal}">
+                        <h3>${meal.strMeal}</h3>
+                        <a href="${meal.strYoutube}" target="_blank">
+                            Watch Recipe
+                        </a>
+                    </div>
+                `;
+            });
+        } else {
+            message.textContent = "No recipes found!";
+        }
+    } catch(error){
+        message.textContent = "Error fetching recipes!";
+        console.error(error);
+    }
+}
+</script>
 
 </body>
 </html>
+
+    
